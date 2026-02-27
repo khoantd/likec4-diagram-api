@@ -1,10 +1,24 @@
 """FastAPI entry point for LikeC4 Diagram API."""
 
+from contextlib import asynccontextmanager
+from typing import AsyncIterator
+
 from fastapi import FastAPI
 
 from app.api.v1.ai_endpoints import router as ai_router
 from app.api.v1.endpoints import router as generate_router
 from app.core.config import settings
+from app.services.db import close_turso, init_turso
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    init_turso()
+    try:
+        yield
+    finally:
+        close_turso()
+
 
 app = FastAPI(
     title=settings.app_name,
@@ -12,6 +26,7 @@ app = FastAPI(
     version="0.1.0",
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 app.include_router(generate_router, prefix="/api/v1")

@@ -18,5 +18,11 @@ class Settings(BaseSettings):
     litellm_base_url: str | None = None  # LiteLLM proxy base URL (e.g. https://litellm.example.com/v1); overrides openai_base_url when set
     ai_model: str = "gpt-4o-mini"  # For LiteLLM use model name like openai/gpt-4o or anthropic/claude-3-5-sonnet
 
+    # Turso / libSQL database (optional)
+    turso_enabled: bool = False
+    turso_db_path: str = ":memory:"
+    turso_remote_url: str | None = None  # When set, used as remote_url for embedded replica sync
+    turso_auth_token: str | None = None  # Optional auth token for remote Turso database
+
 
 settings = Settings()

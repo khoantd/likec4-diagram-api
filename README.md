@@ -26,6 +26,12 @@ source .venv/bin/activate   # or .venv\Scripts\activate on Windows
 pip install -e ".[dev]"
 ```
 
+Then copy the example configuration file and adjust it:
+
+```bash
+cp .env.example .env
+```
+
 ## Running locally
 
 ```bash
@@ -55,6 +61,38 @@ pytest -v
 # or
 make test
 ```
+
+## Turso database integration (optional)
+
+This service can integrate with a **Turso** (libSQL) database using the `pyturso`
+package. Turso is optional and disabled by default.
+
+### Enable Turso
+
+1. Install dependencies (already included in `pyproject.toml`):
+
+```bash
+pip install -e ".[dev]"
+```
+
+2. Configure environment variables (for example in `.env` or Docker):
+
+| Variable | Description |
+|----------|-------------|
+| `LIKEC4_API_TURSO_ENABLED` | Set to `true` to enable Turso integration |
+| `LIKEC4_API_TURSO_DB_PATH` | Local SQLite file path or `:memory:` (default `:memory:`) |
+| `LIKEC4_API_TURSO_REMOTE_URL` | Optional Turso remote URL (used as `remote_url` for embedded replica sync) |
+| `LIKEC4_API_TURSO_AUTH_TOKEN` | Optional auth token for the remote Turso database |
+
+When `LIKEC4_API_TURSO_REMOTE_URL` / `LIKEC4_API_TURSO_AUTH_TOKEN` are not set,
+the service also looks at the standard Turso environment variables:
+
+- `LIBSQL_URL`
+- `LIBSQL_AUTH_TOKEN`
+
+On startup the app initialises a process-wide Turso connection using
+`turso.sync.connect(...)` and closes it on shutdown. You can obtain the
+connection in your own code via `app.services.db.get_turso_connection()`.
 
 ## API reference
 
