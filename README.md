@@ -9,6 +9,7 @@ FastAPI backend for generating **LikeC4** diagrams in D2, Mermaid, and PlantUML 
 - **POST** `/api/v1/generate/puml` – generate PlantUML diagram
 - **POST** `/api/v1/generate/{format}` – generate by format (`d2`, `mermaid`, `puml`)
 - **POST** `/api/v1/ai/generate` – **(optional)** generate LikeC4 DSL from natural language using AI
+- **POST** `/api/v1/auth/token` – obtain a JWT access token (when auth is enabled)
 - **GET** `/health` – health check
 - **GET** `/docs` – OpenAPI (Swagger) docs
 
@@ -60,6 +61,55 @@ API is at http://localhost:8000. Health check: http://localhost:8000/health.
 pytest -v
 # or
 make test
+```
+
+## JWT authentication (optional)
+
+You can protect the diagram and AI endpoints with **JWT Bearer** authentication.
+When disabled (the default) the behaviour matches the original, unauthenticated API.
+
+### Enable JWT auth
+
+1. Install dependencies:
+
+```bash
+pip install -e ".[dev]"
+```
+
+2. Configure the following environment variables (for example in `.env`):
+
+| Variable | Description |
+|----------|-------------|
+| `LIKEC4_API_AUTH_ENABLED` | Set to `true` to require JWT Bearer auth for `/api/v1/generate/*` and `/api/v1/ai/*` |
+| `LIKEC4_API_JWT_SECRET_KEY` | Secret key used to sign tokens (HS256). Use a long, random string. |
+| `LIKEC4_API_AUTH_USERNAME` | Username accepted by the token endpoint (e.g. `admin`) |
+| `LIKEC4_API_AUTH_PASSWORD` | Password accepted by the token endpoint |
+| `LIKEC4_API_JWT_ACCESS_TOKEN_EXPIRE_MINUTES` | (Optional) Access token lifetime in minutes (default: `60`) |
+
+3. Start the app and obtain a token:
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/auth/token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "username=admin&password=change-me"
+```
+
+Response:
+
+```json
+{
+  "access_token": "<jwt>",
+  "token_type": "bearer"
+}
+```
+
+4. Call protected endpoints with the token:
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/generate/d2" \
+  -H "Authorization: Bearer <jwt>" \
+  -H "Content-Type: application/json" \
+  -d '{ "nodes": [], "edges": [], "autoLayout": { "direction": "TB" } }'
 ```
 
 ## Turso database integration (optional)
@@ -177,7 +227,7 @@ Use the returned `likec4_dsl` in a `.likec4` or `.c4` file, or feed it to the di
 
 ## Optional next steps
 
-- Add **API key** or **JWT** auth for production (see Python backend template `auth_method`).
+- Add **API key** auth or integrate JWT with a real user store for production.
 - Add **Redis** or **SQLite** to cache generated diagrams by view hash.
 - Add **CI/CD** (e.g. GitHub Actions: lint, test, build Docker image).
 - Integrate with the monorepo’s `@likec4/generators` via a small Node helper for pixel-perfect parity with the TS implementation.

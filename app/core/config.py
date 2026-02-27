@@ -24,5 +24,13 @@ class Settings(BaseSettings):
     turso_remote_url: str | None = None  # When set, used as remote_url for embedded replica sync
     turso_auth_token: str | None = None  # Optional auth token for remote Turso database
 
+    # JWT authentication (optional)
+    auth_enabled: bool = False
+    jwt_secret_key: str = ""
+    jwt_algorithm: str = "HS256"
+    jwt_access_token_expire_minutes: int = 60
+    auth_username: str | None = "admin"
+    auth_password: str | None = "change-me"
+
 
 settings = Settings()

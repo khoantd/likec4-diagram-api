@@ -3,8 +3,9 @@
 import json
 from collections.abc import Mapping
 
-from fastapi import APIRouter, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 
+from app.core.auth import get_current_username
 from app.core.config import settings
 from app.core.schemas import AIGenerateRequest, AIGenerateResponse, AIRequestLog
 from app.services.ai import generate_likec4_dsl
@@ -71,6 +72,7 @@ def _extract_client_ip_and_geo(request: Request) -> tuple[str | None, str | None
 async def get_ai_requests(
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
+    _username: str = Depends(get_current_username),
 ) -> list[AIRequestLog]:
     """
     Retrieve recent AI generation requests logged in the Turso database.
@@ -96,6 +98,7 @@ async def get_ai_requests(
 async def ai_generate_from_description(
     body: AIGenerateRequest,
     request: Request,
+    _username: str = Depends(get_current_username),
 ) -> AIGenerateResponse:
     """
     Generate LikeC4 DSL from a natural language description using AI.
