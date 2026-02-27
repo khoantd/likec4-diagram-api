@@ -37,6 +37,7 @@ origins = [
     "http://localhost:5173",  # local playground
     "http://localhost:4321",  # local docs (if used)
     "https://likec4.dev",  # production docs
+    "https://likec4-playground.vercel.app",
     # Add your deployed playground/other domains here, e.g.:
     # "https://your-playground-domain",
 ]
