@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.auth_endpoints import router as auth_router
 from app.api.v1.ai_endpoints import router as ai_router
@@ -28,6 +29,24 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
     lifespan=lifespan,
+)
+
+# CORS configuration for playground/docs frontends.
+# Adjust origins as needed for your deployments.
+origins = [
+    "http://localhost:5173",  # local playground
+    "http://localhost:4321",  # local docs (if used)
+    "https://likec4.dev",  # production docs
+    # Add your deployed playground/other domains here, e.g.:
+    # "https://your-playground-domain",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(generate_router, prefix="/api/v1")
