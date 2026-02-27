@@ -54,3 +54,20 @@ class AIGenerateResponse(BaseModel):
 
     likec4_dsl: str = Field(..., description="Generated LikeC4 model and/or views DSL")
     explanation: str | None = Field(default=None, description="Optional short explanation of the generated diagram")
+
+
+class AIRequestLog(BaseModel):
+    """Single AI request/response record stored in the database."""
+
+    id: int
+    prompt: str
+    hint: str | None
+    model: str
+    business_domain: str | None
+    likec4_dsl: str | None
+    explanation: str | None
+    success: bool
+    error: str | None
+    created_at: str
+    client_ip: str | None
+    geo: str | None
