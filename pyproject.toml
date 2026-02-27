@@ -9,7 +9,7 @@ dependencies = [
     "uvicorn[standard]>=0.32.0",
     "pydantic>=2.0",
     "pydantic-settings>=2.0",
-    "pyturso>=0.5.0",
+    "pyturso>=0.4.4",
 ]
 
 [project.optional-dependencies]
