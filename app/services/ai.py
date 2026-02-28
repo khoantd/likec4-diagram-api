@@ -2,32 +2,55 @@
 
 from __future__ import annotations
 
-LIKEC4_SYSTEM_PROMPT = """You are an expert in LikeC4 (architecture-as-code DSL). Your task is to generate valid LikeC4 source code from a user's natural language description of a system or architecture.
+from app.schemas.dsl_schema import get_dsl_schema_text
 
-## LikeC4 DSL rules
+_GENERATION_INSTRUCTIONS = """
+## Instructions
 
-1. **Model block** – Define elements and relations inside `model { ... }`.
+You are an expert in LikeC4 (architecture-as-code DSL). Generate valid LikeC4 source code from the user's natural language description.
 
-2. **Element kinds** (use lowercase): `actor`, `system`, `container`, `component`. Syntax:
-   - `id = kind 'Display Title' 'optional short summary' { ... }`
-   - Or nested: `parentId = system 'Parent' { childId = container 'Child' { } }`
-   - Ids are camelCase or lowercase with no spaces (e.g. `webApp`, `api`, `database`).
+### Rules
+- **IDs**: camelCase or lowercase, no spaces (e.g. `webApp`, `api`, `database`).
+- **Element kinds**: define any needed kinds in `specification { }` first (e.g. `actor`, `system`, `container`, `component`); use only declared kinds in `model { }`.
+- **Always include** at least one view in `views { }` — a landscape `view index { include * }` is always a safe choice.
+- **Strings**: prefer single-quoted strings `'Title'`. Use triple-quoted strings `''' ... '''` only for multi-line markdown content.
+- **Relations**: prefer `source -> target 'label'` in the model block. Use `-> target` inside an element body when source is obvious. Use `-[kind]->` or dot notation (`.uses`, `.requests`) only if those kinds are declared in `specification`.
+- **Output**: respond with ONLY the LikeC4 code. No markdown fences, no prose before or after. If the user asks for an explanation, add a single `// ` comment on the very first line.
 
-3. **Relations** (inside model or inside element body):
-   - `source -> target 'label'` or `-> target 'label'` when inside the source element body.
-   - Optional relation kind: `source -[relationshipKind]-> target 'label'`.
+### Minimal example
+```
+specification {
+  element actor { style { shape person } }
+  element system
+}
 
-4. **Strings**: Use single quotes for titles/descriptions: `'Title'`, `'Multi line\ndescription'`.
+model {
+  user = actor 'User'
+  app  = system 'My App' {
+    api = system 'API'
+    db  = system 'Database' { style { shape storage } }
+    api -> db 'reads/writes'
+  }
+  user -> app.api 'uses'
+}
 
-5. **Views block** – Define views in `views { ... }`:
-   - `view viewId { title 'Title' include * }` – include all elements.
-   - `view viewId of elementId { include * }` – view focused on an element and its children.
-   - Prefer at least one default view that includes `*`.
-
-6. **Output**: Respond with ONLY the LikeC4 code, no markdown code fence, no explanation before or after. If the user asks for explanation, add a single short comment at the top of the file starting with `// ` with one line explanation; otherwise no comments.
+views {
+  view index {
+    title 'System Landscape'
+    include *
+  }
+  view appView of app {
+    title 'My App'
+    include *
+  }
+}
+```
 """
 
+LIKEC4_SYSTEM_PROMPT = get_dsl_schema_text() + "\n\n---\n\n" + _GENERATION_INSTRUCTIONS.strip()
+
 _EXTEND_SYSTEM_ADDENDUM = """
+
 ## Extending an existing model
 
 When an existing LikeC4 DSL is provided:

@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.auth_endpoints import router as auth_router
 from app.api.v1.ai_endpoints import router as ai_router
 from app.api.v1.endpoints import router as generate_router
+from app.api.v1.parse_endpoints import router as parse_router
 from app.core.config import settings
 from app.services.db import close_turso, init_turso
 
@@ -52,6 +53,7 @@ app.add_middleware(
 
 app.include_router(generate_router, prefix="/api/v1")
 app.include_router(ai_router, prefix="/api/v1")
+app.include_router(parse_router, prefix="/api/v1")
 app.include_router(auth_router, prefix="/api/v1")
 
 

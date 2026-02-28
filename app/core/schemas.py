@@ -76,3 +76,31 @@ class AIRequestLog(BaseModel):
     created_at: str
     client_ip: str | None
     geo: str | None
+
+
+# --- DSL parse/validate ---
+
+
+class ParseError(BaseModel):
+    """A single parse/validation error from the LikeC4 language server."""
+
+    message: str
+    line: int
+    sourceFsPath: str
+    range: dict | None = None
+
+
+class ParseRequest(BaseModel):
+    """Request body for DSL parse/validation endpoint."""
+
+    dsl: str = Field(..., min_length=1, description="LikeC4 DSL source code to validate")
+
+
+class ParseResponse(BaseModel):
+    """Response from the DSL parse/validation endpoint."""
+
+    valid: bool = Field(..., description="True when the DSL has no errors")
+    errors: list[ParseError] | None = Field(
+        default=None,
+        description="List of parse/validation errors; null when valid is true",
+    )

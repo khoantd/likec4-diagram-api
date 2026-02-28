@@ -32,5 +32,12 @@ class Settings(BaseSettings):
     auth_username: str | None = "admin"
     auth_password: str | None = "change-me"
 
+    # LikeC4 DSL parse/validate via Node.js (optional)
+    # Enable with LIKEC4_API_PARSE_ENABLED=true
+    parse_enabled: bool = False
+    # Path to parse-c4.mjs; relative paths resolve from the project root (likec4-diagram-api/)
+    # Override with LIKEC4_API_PARSE_SCRIPT_PATH
+    parse_script_path: str | None = "scripts/parse-c4.mjs"
+
 
 settings = Settings()
