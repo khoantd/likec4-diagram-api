@@ -125,6 +125,8 @@ async def ai_generate_from_description(
             api_key=settings.openai_api_key,
             model=settings.ai_model,
             base_url=base_url,
+            current_dsl=body.current_dsl,
+            view_id=body.view_id,
         )
         # Best-effort logging of successful AI requests
         log_ai_request(

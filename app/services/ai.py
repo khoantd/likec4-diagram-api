@@ -27,6 +27,16 @@ LIKEC4_SYSTEM_PROMPT = """You are an expert in LikeC4 (architecture-as-code DSL)
 6. **Output**: Respond with ONLY the LikeC4 code, no markdown code fence, no explanation before or after. If the user asks for explanation, add a single short comment at the top of the file starting with `// ` with one line explanation; otherwise no comments.
 """
 
+_EXTEND_SYSTEM_ADDENDUM = """
+## Extending an existing model
+
+When an existing LikeC4 DSL is provided:
+- Understand the current model before making changes.
+- Preserve all existing element IDs, hierarchy, and relations unless the user explicitly asks to change them.
+- Add new elements, relations, or views using the same naming conventions already used in the DSL.
+- Return the COMPLETE updated DSL—not just the additions.
+"""
+
 
 def _extract_dsl_from_content(content: str) -> tuple[str, str | None]:
     """Extract LikeC4 DSL from model response; optionally return explanation if present."""
@@ -55,9 +65,14 @@ def generate_likec4_dsl(
     api_key: str,
     model: str,
     base_url: str | None = None,
+    current_dsl: str | None = None,
+    view_id: str | None = None,
 ) -> tuple[str, str | None]:
     """
     Call OpenAI-compatible API to generate LikeC4 DSL from a natural language prompt.
+
+    When *current_dsl* is provided the model is instructed to extend the existing
+    architecture rather than generate from scratch.
 
     Returns (likec4_dsl, explanation).
     Raises ValueError if the API call fails or returns empty content.
@@ -74,14 +89,21 @@ def generate_likec4_dsl(
         client_kw["base_url"] = base_url
     client = OpenAI(**client_kw)
 
+    system_prompt = LIKEC4_SYSTEM_PROMPT + (_EXTEND_SYSTEM_ADDENDUM if current_dsl else "")
+
     user_content = prompt
     if hint:
         user_content = f"{prompt}\n\nHint: {hint}"
+    if current_dsl:
+        dsl_block = f"\n\nExisting LikeC4 model:\n```\n{current_dsl}\n```"
+        if view_id:
+            dsl_block += f"\n\nCurrently active view: {view_id}"
+        user_content = user_content + dsl_block
 
     response = client.chat.completions.create(
         model=model,
         messages=[
-            {"role": "system", "content": LIKEC4_SYSTEM_PROMPT},
+            {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_content},
         ],
         temperature=0.2,

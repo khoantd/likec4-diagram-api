@@ -47,6 +47,11 @@ class AIGenerateRequest(BaseModel):
 
     prompt: str = Field(..., min_length=1, description="Natural language description of the system/diagram")
     hint: str | None = Field(default=None, description="Optional hint (e.g. focus on containers, use C4 style)")
+    current_dsl: str | None = Field(
+        default=None,
+        description="Existing LikeC4 DSL source; when provided the AI extends rather than generates from scratch",
+    )
+    view_id: str | None = Field(default=None, description="ID of the view currently active in the diagram")
 
 
 class AIGenerateResponse(BaseModel):
